@@ -1,0 +1,239 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "headers": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/EnvRef"
+              }
+            ]
+          },
+          "title": "Headers",
+          "type": "object"
+        }
+      },
+      "title": "Actor",
+      "type": "object"
+    },
+    "Assertion": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Status",
+          "type": "array"
+        },
+        "json_equals": {
+          "additionalProperties": true,
+          "title": "Json Equals",
+          "type": "object"
+        }
+      },
+      "title": "Assertion",
+      "type": "object"
+    },
+    "EnvRef": {
+      "additionalProperties": false,
+      "properties": {
+        "env": {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Env",
+          "type": "string"
+        }
+      },
+      "required": [
+        "env"
+      ],
+      "title": "EnvRef",
+      "type": "object"
+    },
+    "Experiment": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 180,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "rule": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Rule",
+          "type": "string"
+        },
+        "cwe": {
+          "pattern": "^CWE-[0-9]+$",
+          "title": "Cwe",
+          "type": "string"
+        },
+        "remediation": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Remediation",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "maxItems": 32,
+          "minItems": 2,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "rule",
+        "cwe",
+        "remediation",
+        "steps"
+      ],
+      "title": "Experiment",
+      "type": "object"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 180,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "control",
+            "setup",
+            "probe"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "actor": {
+          "title": "Actor",
+          "type": "string"
+        },
+        "method": {
+          "default": "GET",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "items": {},
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "expect": {
+          "$ref": "#/$defs/Assertion"
+        },
+        "violation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Assertion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "actor",
+        "path",
+        "expect"
+      ],
+      "title": "Step",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "name": {
+      "maxLength": 180,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 2000,
+      "title": "Description",
+      "type": "string"
+    },
+    "actors": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Actor"
+      },
+      "maxProperties": 64,
+      "minProperties": 1,
+      "title": "Actors",
+      "type": "object"
+    },
+    "experiments": {
+      "items": {
+        "$ref": "#/$defs/Experiment"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "title": "Experiments",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "actors",
+    "experiments"
+  ],
+  "title": "Contract",
+  "type": "object"
+}

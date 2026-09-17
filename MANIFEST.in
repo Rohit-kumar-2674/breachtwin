@@ -1,0 +1,7 @@
+include LICENSE NOTICE README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md
+include requirements-tested.txt
+recursive-include src/breachtwin/assets *
+recursive-include examples *.py *.json
+recursive-include docs *.md *.json *.svg *.png *.html *.py
+recursive-include tests *.py
+include .github/workflows/ci.yml

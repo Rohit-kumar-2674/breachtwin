@@ -1,0 +1,435 @@
+{
+  "format": "breachtwin.evidence",
+  "schema_version": 1,
+  "payload": {
+    "run_id": "c8a90fc4e90c",
+    "created_at": "2026-09-16T13:10:44.681089+00:00",
+    "label": "Vulnerable",
+    "factory": "breachtwin.lab:create_vulnerable_app",
+    "contract": {
+      "schema_version": 1,
+      "name": "Organization access boundaries",
+      "description": "Three repeatable access-control experiments using synthetic organizations, users, and records.",
+      "actors": {
+        "alice": {
+          "headers": {
+            "X-Lab-User": "alice"
+          }
+        },
+        "bob": {
+          "headers": {
+            "X-Lab-User": "bob"
+          }
+        },
+        "maya": {
+          "headers": {
+            "X-Lab-User": "maya"
+          }
+        },
+        "admin": {
+          "headers": {
+            "X-Lab-User": "admin"
+          }
+        }
+      },
+      "experiments": [
+        {
+          "id": "BT-001",
+          "title": "Organization isolation",
+          "rule": "A member can read their own organization's records and cannot read another organization's records.",
+          "cwe": "CWE-639",
+          "remediation": "Scope record access to the current principal's organization before returning data. Repeat the foreign-record probe and the own-record controls.",
+          "steps": [
+            {
+              "name": "Alice reads an Alpha record",
+              "kind": "control",
+              "actor": "alice",
+              "method": "GET",
+              "path": "/records/doc-alpha",
+              "body": null,
+              "expect": {
+                "status": [
+                  200
+                ],
+                "json_equals": {
+                  "id": "doc-alpha",
+                  "organization": "alpha"
+                }
+              },
+              "violation": null
+            },
+            {
+              "name": "Alice requests a Bravo record",
+              "kind": "probe",
+              "actor": "alice",
+              "method": "GET",
+              "path": "/records/doc-bravo",
+              "body": null,
+              "expect": {
+                "status": [
+                  403,
+                  404
+                ],
+                "json_equals": {}
+              },
+              "violation": {
+                "status": [],
+                "json_equals": {
+                  "id": "doc-bravo",
+                  "organization": "bravo",
+                  "content": "SYNTHETIC BRAVO RECORD"
+                }
+              }
+            },
+            {
+              "name": "Bob can still read his Bravo record",
+              "kind": "control",
+              "actor": "bob",
+              "method": "GET",
+              "path": "/records/doc-bravo",
+              "body": null,
+              "expect": {
+                "status": [
+                  200
+                ],
+                "json_equals": {
+                  "id": "doc-bravo",
+                  "organization": "bravo"
+                }
+              },
+              "violation": null
+            }
+          ]
+        },
+        {
+          "id": "BT-002",
+          "title": "Membership revocation",
+          "rule": "A revoked member loses record access immediately; other active members retain access.",
+          "cwe": "CWE-863",
+          "remediation": "Recheck current membership for every protected operation. In a real token-based app, also test stale sessions and credential expiry with explicit fixtures.",
+          "steps": [
+            {
+              "name": "Maya reads a record before revocation",
+              "kind": "control",
+              "actor": "maya",
+              "method": "GET",
+              "path": "/records/doc-alpha",
+              "body": null,
+              "expect": {
+                "status": [
+                  200
+                ],
+                "json_equals": {
+                  "id": "doc-alpha"
+                }
+              },
+              "violation": null
+            },
+            {
+              "name": "Administrator revokes Maya's membership",
+              "kind": "setup",
+              "actor": "admin",
+              "method": "POST",
+              "path": "/admin/members/maya/revoke",
+              "body": null,
+              "expect": {
+                "status": [
+                  200
+                ],
+                "json_equals": {
+                  "revoked": true,
+                  "member": "maya"
+                }
+              },
+              "violation": null
+            },
+            {
+              "name": "Maya requests the record after revocation",
+              "kind": "probe",
+              "actor": "maya",
+              "method": "GET",
+              "path": "/records/doc-alpha",
+              "body": null,
+              "expect": {
+                "status": [
+                  401,
+                  403,
+                  404
+                ],
+                "json_equals": {}
+              },
+              "violation": {
+                "status": [],
+                "json_equals": {
+                  "id": "doc-alpha",
+                  "content": "SYNTHETIC ALPHA RECORD"
+                }
+              }
+            },
+            {
+              "name": "Alice retains access to the Alpha record",
+              "kind": "control",
+              "actor": "alice",
+              "method": "GET",
+              "path": "/records/doc-alpha",
+              "body": null,
+              "expect": {
+                "status": [
+                  200
+                ],
+                "json_equals": {
+                  "id": "doc-alpha"
+                }
+              },
+              "violation": null
+            }
+          ]
+        },
+        {
+          "id": "BT-003",
+          "title": "Restricted administrator action",
+          "rule": "Only an administrator may create an administrative report; member record access remains available.",
+          "cwe": "CWE-862",
+          "remediation": "Enforce administrator authorization on the report endpoint before creating the report. Keep the administrator success control and the regular member read control.",
+          "steps": [
+            {
+              "name": "Administrator creates a report",
+              "kind": "control",
+              "actor": "admin",
+              "method": "POST",
+              "path": "/admin/reports",
+              "body": null,
+              "expect": {
+                "status": [
+                  201
+                ],
+                "json_equals": {
+                  "created": true,
+                  "created_by": "admin"
+                }
+              },
+              "violation": null
+            },
+            {
+              "name": "A regular member requests a report",
+              "kind": "probe",
+              "actor": "alice",
+              "method": "POST",
+              "path": "/admin/reports",
+              "body": null,
+              "expect": {
+                "status": [
+                  403
+                ],
+                "json_equals": {}
+              },
+              "violation": {
+                "status": [],
+                "json_equals": {
+                  "created": true,
+                  "created_by": "alice"
+                }
+              }
+            },
+            {
+              "name": "Alice retains regular record access",
+              "kind": "control",
+              "actor": "alice",
+              "method": "GET",
+              "path": "/records/doc-alpha",
+              "body": null,
+              "expect": {
+                "status": [
+                  200
+                ],
+                "json_equals": {
+                  "id": "doc-alpha"
+                }
+              },
+              "violation": null
+            }
+          ]
+        }
+      ]
+    },
+    "environment": {
+      "breachtwin": "0.1.0",
+      "python": "3.12.14",
+      "platform": "Linux",
+      "packages": {
+        "fastapi": "0.141.1",
+        "starlette": "0.52.1",
+        "httpx": "0.28.1",
+        "pydantic": "2.13.5",
+        "anyio": "4.15.1"
+      },
+      "factory_module_sha256": "c3860a86d7b0613103097b56f9fec05fe4bcc1bfff210cb80b8bca145038ffb4"
+    },
+    "results": [
+      {
+        "id": "BT-001",
+        "title": "Organization isolation",
+        "rule": "A member can read their own organization's records and cannot read another organization's records.",
+        "cwe": "CWE-639",
+        "remediation": "Scope record access to the current principal's organization before returning data. Repeat the foreign-record probe and the own-record controls.",
+        "verdict": "reproduced",
+        "controls_ok": true,
+        "steps": [
+          {
+            "name": "Alice reads an Alpha record",
+            "kind": "control",
+            "actor": "alice",
+            "method": "GET",
+            "path": "/records/doc-alpha",
+            "outcome": "passed",
+            "status": 200,
+            "duration_ms": 2.239,
+            "expected_matched": true,
+            "violation_matched": false
+          },
+          {
+            "name": "Alice requests a Bravo record",
+            "kind": "probe",
+            "actor": "alice",
+            "method": "GET",
+            "path": "/records/doc-bravo",
+            "outcome": "reproduced",
+            "status": 200,
+            "duration_ms": 0.819,
+            "expected_matched": false,
+            "violation_matched": true
+          },
+          {
+            "name": "Bob can still read his Bravo record",
+            "kind": "control",
+            "actor": "bob",
+            "method": "GET",
+            "path": "/records/doc-bravo",
+            "outcome": "passed",
+            "status": 200,
+            "duration_ms": 0.677,
+            "expected_matched": true,
+            "violation_matched": false
+          }
+        ]
+      },
+      {
+        "id": "BT-002",
+        "title": "Membership revocation",
+        "rule": "A revoked member loses record access immediately; other active members retain access.",
+        "cwe": "CWE-863",
+        "remediation": "Recheck current membership for every protected operation. In a real token-based app, also test stale sessions and credential expiry with explicit fixtures.",
+        "verdict": "reproduced",
+        "controls_ok": true,
+        "steps": [
+          {
+            "name": "Maya reads a record before revocation",
+            "kind": "control",
+            "actor": "maya",
+            "method": "GET",
+            "path": "/records/doc-alpha",
+            "outcome": "passed",
+            "status": 200,
+            "duration_ms": 1.253,
+            "expected_matched": true,
+            "violation_matched": false
+          },
+          {
+            "name": "Administrator revokes Maya's membership",
+            "kind": "setup",
+            "actor": "admin",
+            "method": "POST",
+            "path": "/admin/members/maya/revoke",
+            "outcome": "passed",
+            "status": 200,
+            "duration_ms": 0.879,
+            "expected_matched": true,
+            "violation_matched": false
+          },
+          {
+            "name": "Maya requests the record after revocation",
+            "kind": "probe",
+            "actor": "maya",
+            "method": "GET",
+            "path": "/records/doc-alpha",
+            "outcome": "reproduced",
+            "status": 200,
+            "duration_ms": 0.639,
+            "expected_matched": false,
+            "violation_matched": true
+          },
+          {
+            "name": "Alice retains access to the Alpha record",
+            "kind": "control",
+            "actor": "alice",
+            "method": "GET",
+            "path": "/records/doc-alpha",
+            "outcome": "passed",
+            "status": 200,
+            "duration_ms": 0.615,
+            "expected_matched": true,
+            "violation_matched": false
+          }
+        ]
+      },
+      {
+        "id": "BT-003",
+        "title": "Restricted administrator action",
+        "rule": "Only an administrator may create an administrative report; member record access remains available.",
+        "cwe": "CWE-862",
+        "remediation": "Enforce administrator authorization on the report endpoint before creating the report. Keep the administrator success control and the regular member read control.",
+        "verdict": "reproduced",
+        "controls_ok": true,
+        "steps": [
+          {
+            "name": "Administrator creates a report",
+            "kind": "control",
+            "actor": "admin",
+            "method": "POST",
+            "path": "/admin/reports",
+            "outcome": "passed",
+            "status": 201,
+            "duration_ms": 1.09,
+            "expected_matched": true,
+            "violation_matched": false
+          },
+          {
+            "name": "A regular member requests a report",
+            "kind": "probe",
+            "actor": "alice",
+            "method": "POST",
+            "path": "/admin/reports",
+            "outcome": "reproduced",
+            "status": 201,
+            "duration_ms": 0.693,
+            "expected_matched": false,
+            "violation_matched": true
+          },
+          {
+            "name": "Alice retains regular record access",
+            "kind": "control",
+            "actor": "alice",
+            "method": "GET",
+            "path": "/records/doc-alpha",
+            "outcome": "passed",
+            "status": 200,
+            "duration_ms": 0.715,
+            "expected_matched": true,
+            "violation_matched": false
+          }
+        ]
+      }
+    ],
+    "duration_ms": 48.738,
+    "summary": {
+      "reproduced": 3,
+      "blocked": 0,
+      "inconclusive": 0
+    },
+    "scope": "Explicit contract cases on a trusted, fresh local ASGI fixture. No network scanning. This is not a proof of application-wide security."
+  },
+  "integrity": {
+    "algorithm": "sha256",
+    "digest": "861e7e1d1b7784035225be16099c7b5cbde7729062f201dadff5d707975846fb"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "Personal note ownership",
+  "description": "A minimal synthetic contract for a custom FastAPI factory.",
+  "actors": {
+    "alice": {"headers": {"X-Fixture-User": "alice"}},
+    "bob": {"headers": {"X-Fixture-User": "bob"}}
+  },
+  "experiments": [{
+    "id": "NOTES-001",
+    "title": "Notes belong to their author",
+    "rule": "A user reads only their own note.",
+    "cwe": "CWE-639",
+    "remediation": "Check authenticated ownership before returning a note.",
+    "steps": [
+      {"name": "Alice reads her note", "kind": "control", "actor": "alice", "path": "/notes/alice", "expect": {"status": [200], "json_equals": {"id": "alice-note", "owner": "alice"}}},
+      {"name": "Alice requests Bob's note", "kind": "probe", "actor": "alice", "path": "/notes/bob", "expect": {"status": [403, 404]}, "violation": {"json_equals": {"id": "bob-note", "owner": "bob"}}},
+      {"name": "Bob still reads his note", "kind": "control", "actor": "bob", "path": "/notes/bob", "expect": {"status": [200], "json_equals": {"id": "bob-note", "owner": "bob"}}}
+    ]
+  }]
+}
