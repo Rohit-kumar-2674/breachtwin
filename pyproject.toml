@@ -19,6 +19,11 @@ classifiers = [
   "Topic :: Security",
 ]
 
+[project.urls]
+Repository = "https://github.com/Rohit-kumar-2674/breachtwin"
+Issues = "https://github.com/Rohit-kumar-2674/breachtwin/issues"
+Documentation = "https://github.com/Rohit-kumar-2674/breachtwin#readme"
+
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "build>=1,<2"]
 

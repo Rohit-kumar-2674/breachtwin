@@ -8,6 +8,8 @@
 
 **Release: 0.1.0 · Alpha · Python 3.10+ · Apache-2.0**
 
+[![Contract and regression checks](https://github.com/Rohit-kumar-2674/breachtwin/actions/workflows/ci.yml/badge.svg)](https://github.com/Rohit-kumar-2674/breachtwin/actions/workflows/ci.yml)
+
 BreachTwin turns an explicit security rule into a repeatable local experiment. Each experiment includes legitimate-user controls, a request that tests the boundary, and evidence describing what actually happened. The bundled lab demonstrates three seeded failures and their corrected behavior. Exported tests catch the failures when they are reintroduced.
 
 **This release executes contracts you write.** It does not discover unknown vulnerabilities, automatically clone arbitrary applications, generate patches, or provide an OS sandbox. Its applications run as trusted Python code in the current process. These boundaries are part of the product, not hidden behind a risk score.
@@ -27,13 +29,20 @@ BreachTwin turns an explicit security rule into a repeatable local experiment. E
 | Replay | Verify an evidence bundle, create fresh fixtures, and rerun its contract. |
 | Regression export | Generate an executable `unittest` file for local use and CI. |
 | Offline report | Responsive HTML with run switching, searchable experiments, trace playback, evidence export, and printing. |
-| GitHub integration | A workflow definition for tests and packaging on Linux, Windows, and macOS. Remote CI runs begin after publication. |
+| GitHub integration | Tests and demo regressions on Linux, Windows, and macOS, plus package builds. See the recorded CI result in [validation notes](docs/validation.md). |
 
 No account, AI service, Node.js build, Docker daemon, or API key is required for the bundled demo. Installation downloads Python dependencies. Demo execution and report viewing do not require an Internet connection.
 
 ## Quick start
 
-Download and extract the source ZIP, then open a terminal **inside the `breachtwin` folder**. On Linux, macOS, or a Debian/Ubuntu terminal:
+Clone the repository, or download and extract its source ZIP:
+
+```bash
+git clone https://github.com/Rohit-kumar-2674/breachtwin.git
+cd breachtwin
+```
+
+From a terminal **inside the `breachtwin` folder**, on Linux, macOS, or Debian/Ubuntu:
 
 ```bash
 python3 -m venv .venv
@@ -125,7 +134,7 @@ See [the contract guide](docs/contracts.md) for the complete schema, credential 
 
 ## Android and platform support
 
-The HTML report is designed for mobile browsers. The engine is tested locally on Linux with Python 3.12; the included CI matrix targets Python 3.10, 3.12, and 3.13 on Linux, Windows, and macOS, but those remote jobs have not run before repository publication.
+The HTML report is designed for mobile browsers. The initial published commit passed the GitHub Actions matrix for Python 3.10, 3.12, and 3.13 on Linux, Windows, and macOS. The [validation notes](docs/validation.md) link that run and distinguish hosted CI from physical device testing. Native Termux remains unverified.
 
 For an Android-first workflow, run the engine in a Debian/Ubuntu terminal or a remote development machine and download the HTML report to your phone. Native Termux installation is **not verified**; `pydantic-core` may require a Rust toolchain when a compatible wheel is unavailable. No Rollup or native Node modules are involved.
 

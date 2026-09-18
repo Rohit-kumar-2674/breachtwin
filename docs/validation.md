@@ -46,7 +46,12 @@ The desktop and mobile screenshots in this directory were generated from actual 
 
 These seeded examples validate the implemented experiment runner. They do not measure general vulnerability discovery, production security, zero false positives, or universal fix correctness. No external website or user infrastructure was assessed.
 
-The GitHub Actions matrix is configured but was not run remotely before repository publication. Windows, macOS, Python 3.10/3.13, and native Termux runtime support are not claimed as locally verified.
+The first published commit, `2f4886228a94203600a47c325f0e3e2bab682790`, passed
+[all 10 GitHub Actions jobs](https://github.com/Rohit-kumar-2674/breachtwin/actions/runs/35204647245):
+the nine combinations of Linux, Windows, and macOS with Python 3.10, 3.12, and 3.13,
+plus the package build. These are hosted runner results, not physical-device testing.
+Native Termux remains unverified. This result describes that exact published commit;
+subsequent changes must pass their own checks.
 
 To repeat the core checks:
 
