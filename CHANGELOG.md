@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Pin CI actions to reviewed commits and disable persisted checkout credentials.
+- Add dependency update proposals and package repository/documentation metadata.
+- Add a clone-first quick start and replace pre-publication CI caveats with the verified initial run.
+
+
 ## 0.1.0 — 2026-09-16
 
 - Added a three-case FastAPI access-control lab with vulnerable and corrected behavior.
